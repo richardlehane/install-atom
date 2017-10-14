@@ -1,0 +1,4 @@
+sudo: required
+script: 
+- chmod +x install.sh
+- sudo isntall.sh

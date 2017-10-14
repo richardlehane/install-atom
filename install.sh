@@ -1,7 +1,18 @@
-FAKE_DB_PASS=DUMMY-PASS
+#! /bin/bash
+# set ROOT and AtoM DB passes to env vars if available otherwise defaults to dummy-pass and atom-pass
+if [[ -z "${ROOT_PASS}" ]]; then
+  ROOT_DB_PASS=dummy-pass
+else
+  ROOT_DB_PASS=$ROOT_PASS
+fi
+if [[ -z "${ATOM_PASS}" ]]; then
+  ATOM_DB_PASS=atom-pass
+else
+  ATOM_DB_PASS=$ATOM_PASS
+fi
 # install MYSQL
-echo "percona-server-5.6 mysql-server/root_password password $FAKE_DB_PASS" | debconf-set-selections
-echo "percona-server-5.6 mysql-server/root_password_again password $FAKE_DB_PASS" | debconf-set-selections
+echo "percona-server-5.6 mysql-server/root_password password $ROOT_DB_PASS" | debconf-set-selections
+echo "percona-server-5.6 mysql-server/root_password_again password $ROOT_DB_PASS" | debconf-set-selections
 apt-get -y install percona-server-5.6
 # install JAVA
 apt install -y openjdk-8-jre-headless software-properties-common
@@ -172,5 +183,5 @@ tar xzf atom-2.4.0.tar.gz -C /usr/share/nginx/atom --strip 1
 chown -R www-data:www-data /usr/share/nginx/atom
 chmod o= /usr/share/nginx/atom
 # Setup DB
-mysql -h localhost -u root -p$FAKE_DB_PASS -e "CREATE DATABASE atom CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
-mysql -h localhost -u root -p$FAKE_DB_PASS -e "GRANT ALL ON atom.* TO 'atom'@'localhost' IDENTIFIED BY '12345';"
+mysql -h localhost -u root -p$ROOT_DB_PASS -e "CREATE DATABASE atom CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
+mysql -h localhost -u root -p$ROOT_DB_PASS -e "GRANT ALL ON atom.* TO 'atom'@'localhost' IDENTIFIED BY '$ATOM_DB_PASS';"

@@ -4,20 +4,20 @@ echo "percona-server-5.6 mysql-server/root_password password $FAKE_DB_PASS" | de
 echo "percona-server-5.6 mysql-server/root_password_again password $FAKE_DB_PASS" | debconf-set-selections
 apt-get -y install percona-server-5.6
 # install JAVA
-apt install openjdk-8-jre-headless software-properties-common
+apt install -y openjdk-8-jre-headless software-properties-common
 # install Elastic Search
 wget -qO - http://packages.elasticsearch.org/GPG-KEY-elasticsearch | apt-key add -
 add-apt-repository "deb http://packages.elasticsearch.org/elasticsearch/1.7/debian stable main"
 apt update
-apt install elasticsearch
+apt install -y elasticsearch
 systemctl enable elasticsearch
 systemctl start elasticsearch
 # install and configure Nginx
-apt install nginx
+apt install -y nginx
 touch /etc/nginx/sites-available/atom
 ln -sf /etc/nginx/sites-available/atom /etc/nginx/sites-enabled/atom
 rm /etc/nginx/sites-enabled/default
-cat <<EOF > /etc/nginx/sites-available/atom
+cat <<"EOF" > /etc/nginx/sites-available/atom
 upstream atom {
   server unix:/run/php7.0-fpm.atom.sock;
 }
@@ -88,15 +88,15 @@ EOF
 systemctl enable nginx
 systemctl reload nginx
 # Install PHP
-apt install php7.0-cli php7.0-curl php7.0-json php7.0-ldap php7.0-mysql php7.0-opcache php7.0-readline php7.0-xml php7.0-fpm php7.0-mbstring php7.0-mcrypt php7.0-xsl php7.0-zip php-memcache php-apcu
+apt install -y php7.0-cli php7.0-curl php7.0-json php7.0-ldap php7.0-mysql php7.0-opcache php7.0-readline php7.0-xml php7.0-fpm php7.0-mbstring php7.0-mcrypt php7.0-xsl php7.0-zip php-memcache php-apcu
 # Install php-apcu-bc
-apt install php-dev
-pecl install apcu_bc-beta
+apt install -y php-dev
+yes '' | pecl install apcu_bc-beta
 echo "extension=apc.so" | tee /etc/php/7.0/mods-available/apcu-bc.ini
 ln -sf /etc/php/7.0/mods-available/apcu-bc.ini /etc/php/7.0/fpm/conf.d/30-apcu-bc.ini
 ln -sf /etc/php/7.0/mods-available/apcu-bc.ini /etc/php/7.0/cli/conf.d/30-apcu-bc.ini
 systemctl restart php7.0-fpm
-cat <<EOF > /etc/php/7.0/fpm/pool.d/atom.conf
+cat <<"EOF" > /etc/php/7.0/fpm/pool.d/atom.conf
 [atom]
 
 ; The user running the application
@@ -161,10 +161,10 @@ systemctl start php7.0-fpm
 rm /etc/php/7.0/fpm/pool.d/www.conf
 systemctl restart php7.0-fpm
 # install GEARMAN
-apt install gearman-job-server
+apt install -y gearman-job-server
 # FOP
-apt install --no-install-recommends fop libsaxon-java
-# Optional: apt install imagemagick ghostscript poppler-utils ffmpeg
+apt install -y --no-install-recommends fop libsaxon-java
+# Optional: apt install -y imagemagick ghostscript poppler-utils ffmpeg
 # Install AtoM
 wget https://storage.accesstomemory.org/releases/atom-2.4.0.tar.gz
 mkdir /usr/share/nginx/atom

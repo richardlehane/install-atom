@@ -10,10 +10,16 @@ if [[ -z "${ATOM_PASS}" ]]; then
 else
   ATOM_DB_PASS=$ATOM_PASS
 fi
+if [[ -z "${DB_HOST}" ]]; then
+  apt-get -y install percona-server-client-5.6
+  CONNECT=$DB_HOST
+else
 # install MYSQL
-echo "percona-server-5.6 mysql-server/root_password password $ROOT_DB_PASS" | debconf-set-selections
-echo "percona-server-5.6 mysql-server/root_password_again password $ROOT_DB_PASS" | debconf-set-selections
-apt-get -y install percona-server-5.6
+  echo "percona-server-server-5.6 mysql-server/root_password password $ROOT_DB_PASS" | debconf-set-selections
+  echo "percona-server-server-5.6 mysql-server/root_password_again password $ROOT_DB_PASS" | debconf-set-selections
+  apt-get -y install percona-server-server-5.6
+  CONNECT=localhost
+fi
 # install JAVA
 apt install -y openjdk-8-jre-headless software-properties-common
 # install Elastic Search
@@ -202,5 +208,5 @@ tar xzf atom-2.4.0.tar.gz -C /usr/share/nginx/atom --strip 1
 chown -R www-data:www-data /usr/share/nginx/atom
 chmod o= /usr/share/nginx/atom
 # Setup DB
-mysql -h localhost -u root -p$ROOT_DB_PASS -e "CREATE DATABASE atom CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
-mysql -h localhost -u root -p$ROOT_DB_PASS -e "GRANT ALL ON atom.* TO 'atom'@'localhost' IDENTIFIED BY '$ATOM_DB_PASS';"
+mysql -h $CONNECT -u root -p$ROOT_DB_PASS -e "CREATE DATABASE atom CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
+mysql -h $CONNECT -u root -p$ROOT_DB_PASS -e "GRANT ALL ON atom.* TO 'atom'@'localhost' IDENTIFIED BY '$ATOM_DB_PASS';"

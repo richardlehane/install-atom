@@ -1,4 +1,4 @@
 sudo: required
 script: 
 - chmod +x install.sh
-- sudo isntall.sh
+- sudo install.sh

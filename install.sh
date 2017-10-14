@@ -173,6 +173,24 @@ rm /etc/php/7.0/fpm/pool.d/www.conf
 systemctl restart php7.0-fpm
 # install GEARMAN
 apt install -y gearman-job-server
+cat <<"EOF" > /usr/lib/systemd/system/atom-worker.service
+[Unit]
+Description=AtoM worker
+After=network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/usr/share/nginx/atom
+ExecStart=/usr/bin/php -d memory_limit=-1 -d error_reporting="E_ALL" symfony jobs:worker
+ExecStop=/bin/kill -s TERM $MAINPID
+Restart=no
+EOF
+systemctl daemon-reload
 # FOP
 apt install -y --no-install-recommends fop libsaxon-java
 # Optional: apt install -y imagemagick ghostscript poppler-utils ffmpeg

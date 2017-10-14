@@ -191,6 +191,7 @@ ExecStop=/bin/kill -s TERM $MAINPID
 Restart=no
 EOF
 systemctl daemon-reload
+systemctl enable atom-worker
 # FOP
 apt install -y --no-install-recommends fop libsaxon-java
 # Optional: apt install -y imagemagick ghostscript poppler-utils ffmpeg

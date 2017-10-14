@@ -9,3 +9,7 @@ You can try it be installing a fresh Ubuntu Xenial VM with Google or AWS, then j
 - sudo ./install.sh
 
 If all goes as planned, you should have a fresh AtoM instance available for configuration at http://localhost.
+
+After install run to start a gearman worker:
+
+- sudo systemctl start atom-worker

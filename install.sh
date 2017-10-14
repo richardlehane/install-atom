@@ -1,8 +1,8 @@
 FAKE_DB_PASS=DUMMY-PASS
 # install MYSQL
-debconf-set-selections <<< 'percona-server-server-5.6 mysql-server/root_password password '$FAKE_DB_PASS
-debconf-set-selections <<< 'percona-server-server-5.6 mysql-server/root_password_again password '$FAKE_DB_PASS
-apt-get -y install percona-server-server-5.6
+echo "percona-server-5.6 mysql-server/root_password password $FAKE_DB_PASS" | debconf-set-selections
+echo "percona-server-5.6 mysql-server/root_password_again password $FAKE_DB_PASS" | debconf-set-selections
+apt-get -y install percona-server-5.6
 # install JAVA
 apt install openjdk-8-jre-headless software-properties-common
 # install Elastic Search

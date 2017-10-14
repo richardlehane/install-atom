@@ -209,4 +209,4 @@ chown -R www-data:www-data /usr/share/nginx/atom
 chmod o= /usr/share/nginx/atom
 # Setup DB
 mysql -h $CONNECT -u root -p$ROOT_DB_PASS -e "CREATE DATABASE atom CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
-mysql -h $CONNECT -u root -p$ROOT_DB_PASS -e "GRANT ALL ON atom.* TO 'atom'@'localhost' IDENTIFIED BY '$ATOM_DB_PASS';"
+mysql -h $CONNECT -u root -p$ROOT_DB_PASS -e "GRANT ALL ON atom.* TO 'atom'@'$CONNECT' IDENTIFIED BY '$ATOM_DB_PASS';"

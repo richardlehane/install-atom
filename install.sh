@@ -108,7 +108,7 @@ systemctl reload nginx
 apt-get install -y php7.0-cli php7.0-curl php7.0-json php7.0-ldap php7.0-mysql php7.0-opcache php7.0-readline php7.0-xml php7.0-fpm php7.0-mbstring php7.0-mcrypt php7.0-xsl php7.0-zip php-memcache php-apcu
 # Install php-apcu-bc
 apt-get install -y php-dev
-printf "\n" | pecl install apcu_bc-beta
+pecl install apcu_bc-beta
 echo "extension=apc.so" | tee /etc/php/7.0/mods-available/apcu-bc.ini
 ln -sf /etc/php/7.0/mods-available/apcu-bc.ini /etc/php/7.0/fpm/conf.d/30-apcu-bc.ini
 ln -sf /etc/php/7.0/mods-available/apcu-bc.ini /etc/php/7.0/cli/conf.d/30-apcu-bc.ini
@@ -208,5 +208,6 @@ tar xzf atom-2.4.0.tar.gz -C /usr/share/nginx/atom --strip 1
 chown -R www-data:www-data /usr/share/nginx/atom
 chmod o= /usr/share/nginx/atom
 # Setup DB
+echo "Installing DB on host $CONNECT"
 mysql -h $CONNECT -u root -p$ROOT_DB_PASS -e "CREATE DATABASE atom CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
 mysql -h $CONNECT -u root -p$ROOT_DB_PASS -e "GRANT ALL ON atom.* TO 'atom'@'$CONNECT' IDENTIFIED BY '$ATOM_DB_PASS';"

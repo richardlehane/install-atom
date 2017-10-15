@@ -11,7 +11,7 @@ else
   ATOM_DB_PASS=$ATOM_PASS
 fi
 if [[ -z "${DB_HOST}" ]]; then
-  apt-get -y install percona-server-client-5.6
+  apt-get install -y mysql-client
   CONNECT=$DB_HOST
 else
 # install MYSQL
@@ -21,16 +21,16 @@ else
   CONNECT=localhost
 fi
 # install JAVA
-apt install -y openjdk-8-jre-headless software-properties-common
+apt-get install -y openjdk-8-jre-headless software-properties-common
 # install Elastic Search
 wget -qO - http://packages.elasticsearch.org/GPG-KEY-elasticsearch | apt-key add -
 add-apt-repository "deb http://packages.elasticsearch.org/elasticsearch/1.7/debian stable main"
-apt update
-apt install -y elasticsearch
+apt-get update
+apt-get install -y elasticsearch
 systemctl enable elasticsearch
 systemctl start elasticsearch
 # install and configure Nginx
-apt install -y nginx
+apt-get install -y nginx
 touch /etc/nginx/sites-available/atom
 ln -sf /etc/nginx/sites-available/atom /etc/nginx/sites-enabled/atom
 rm /etc/nginx/sites-enabled/default
@@ -105,9 +105,9 @@ EOF
 systemctl enable nginx
 systemctl reload nginx
 # Install PHP
-apt install -y php7.0-cli php7.0-curl php7.0-json php7.0-ldap php7.0-mysql php7.0-opcache php7.0-readline php7.0-xml php7.0-fpm php7.0-mbstring php7.0-mcrypt php7.0-xsl php7.0-zip php-memcache php-apcu
+apt-get install -y php7.0-cli php7.0-curl php7.0-json php7.0-ldap php7.0-mysql php7.0-opcache php7.0-readline php7.0-xml php7.0-fpm php7.0-mbstring php7.0-mcrypt php7.0-xsl php7.0-zip php-memcache php-apcu
 # Install php-apcu-bc
-apt install -y php-dev
+apt-get install -y php-dev
 yes '' | pecl install apcu_bc-beta
 echo "extension=apc.so" | tee /etc/php/7.0/mods-available/apcu-bc.ini
 ln -sf /etc/php/7.0/mods-available/apcu-bc.ini /etc/php/7.0/fpm/conf.d/30-apcu-bc.ini
@@ -178,7 +178,7 @@ systemctl start php7.0-fpm
 rm /etc/php/7.0/fpm/pool.d/www.conf
 systemctl restart php7.0-fpm
 # install GEARMAN
-apt install -y gearman-job-server
+apt-get install -y gearman-job-server
 cat <<"EOF" > /usr/lib/systemd/system/atom-worker.service
 [Unit]
 Description=AtoM worker
@@ -199,8 +199,8 @@ EOF
 systemctl daemon-reload
 systemctl enable atom-worker
 # FOP
-apt install -y --no-install-recommends fop libsaxon-java
-# Optional: apt install -y imagemagick ghostscript poppler-utils ffmpeg
+apt-get install -y --no-install-recommends fop libsaxon-java
+# Optional: apt-get install -y imagemagick ghostscript poppler-utils ffmpeg
 # Install AtoM
 wget https://storage.accesstomemory.org/releases/atom-2.4.0.tar.gz
 mkdir /usr/share/nginx/atom

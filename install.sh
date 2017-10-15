@@ -11,14 +11,11 @@ else
   ATOM_DB_PASS=$ATOM_PASS
 fi
 if [[ -z "${DB_HOST}" ]]; then
-  apt-get install -y mysql-client
-  CONNECT=$DB_HOST
+  echo "skipping mysql install"
 else
-# install MYSQL
   echo "percona-server-server-5.6 mysql-server/root_password password $ROOT_DB_PASS" | debconf-set-selections
   echo "percona-server-server-5.6 mysql-server/root_password_again password $ROOT_DB_PASS" | debconf-set-selections
   apt-get -y install percona-server-server-5.6
-  CONNECT=localhost
 fi
 # install JAVA
 apt-get install -y openjdk-8-jre-headless software-properties-common
@@ -208,6 +205,9 @@ tar xzf atom-2.4.0.tar.gz -C /usr/share/nginx/atom --strip 1
 chown -R www-data:www-data /usr/share/nginx/atom
 chmod o= /usr/share/nginx/atom
 # Setup DB
-echo "Installing DB on host $CONNECT"
-mysql -h $CONNECT -u root -p$ROOT_DB_PASS -e "CREATE DATABASE atom CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
-mysql -h $CONNECT -u root -p$ROOT_DB_PASS -e "GRANT ALL ON atom.* TO 'atom'@'$CONNECT' IDENTIFIED BY '$ATOM_DB_PASS';"
+if [[ -z "${DB_HOST}" ]]; then
+  echo "Skipping DB setup. Make sure you have an 'atom' database on your DB server (CREATE DATABASE atom CHARACTER SET utf8 COLLATE utf8_unicode_ci;)"
+else
+  mysql -h localhost -u root -p$ROOT_DB_PASS -e "CREATE DATABASE atom CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
+  mysql -h localhost -u root -p$ROOT_DB_PASS -e "GRANT ALL ON atom.* TO 'atom'@'localhost' IDENTIFIED BY '$ATOM_DB_PASS';"
+fi

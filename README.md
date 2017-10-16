@@ -43,7 +43,7 @@ To get this working you will need to configure the database server before instal
     CREATE DATABASE atom CHARACTER SET utf8 COLLATE utf8_unicode_ci;
     GRANT ALL ON atom.* TO 'atom'@'%' IDENTIFIED BY '$ATOM_PASS';
 
-(If you are using Google SQL then you can enter these commands by using the gcloud command line tool: `gcloud sql connect name-of-db-instance` will give you a mysql> prompt where you can enter the above SQL command. Alternatively, you could use the GUI in the Google SQL console to add the user and database manually. Finally, in order for your Google Compute Engine application server to connect to the database server you will need to add the static IP of that machine to the "Authorisation" list in the Google SQL console. To get a static IP for your Google Compute application server go to VPC Network -> External IP Addresses page and assign one).
+(If you are using Google SQL then you can enter these commands by using the gcloud command line tool: `gcloud sql connect name-of-db-instance` will give you a mysql> prompt where you can enter the above SQL command. Alternatively, you could use the GUI in the Google SQL console to add the user and database manually. Finally, in order for your Google Compute Engine application server to connect to the database server you will need to add the static IP of that machine to the "Authorisation" list in the Google SQL console. To get a static IP for your Google Compute application server go to VPC Network -> External IP Addresses page and assign one.
 
 Having done all that, you can setup the application server just by giving it a DB_HOST environment variable (which can have any value - just needs to be there).
 

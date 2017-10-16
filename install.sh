@@ -1,7 +1,7 @@
 #! /bin/bash
 # set ROOT and AtoM DB passes to env vars if available otherwise defaults to dummy-pass and atom-pass
 if [[ -z "${ROOT_PASS}" ]]; then
-  ROOT_DB_PASS=dummy-pass
+  ROOT_DB_PASS=root-pass
 else
   ROOT_DB_PASS=$ROOT_PASS
 fi

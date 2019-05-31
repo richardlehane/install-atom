@@ -13,27 +13,29 @@ fi
 if [[ -z "${DB_HOST}" ]]; then
   echo "skipping mysql install"
 else
-  echo "percona-server-server-5.6 mysql-server/root_password password $ROOT_DB_PASS" | debconf-set-selections
-  echo "percona-server-server-5.6 mysql-server/root_password_again password $ROOT_DB_PASS" | debconf-set-selections
-  apt-get -y install percona-server-server-5.6
+  echo "mysql-server-5.7 mysql-server/root_password password $ROOT_DB_PASS" | debconf-set-selections
+  echo "mysql-server-5.7 mysql-server/root_password_again password $ROOT_DB_PASS" | debconf-set-selections
+  apt -y install mysql-server-5.7
 fi
 # install JAVA
-apt-get install -y openjdk-8-jre-headless software-properties-common
-# install Elastic Search
-wget -qO - http://packages.elasticsearch.org/GPG-KEY-elasticsearch | apt-key add -
-add-apt-repository "deb http://packages.elasticsearch.org/elasticsearch/1.7/debian stable main"
+add-apt-repository ppa:openjdk-r/ppa
 apt-get update
-apt-get install -y elasticsearch
+apt install -y openjdk-11-jre-headless software-properties-common
+# install Elastic Search
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
+echo "deb https://artifacts.elastic.co/packages/5.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-5.x.list
+apt update
+apt install -y elasticsearch
 systemctl enable elasticsearch
 systemctl start elasticsearch
 # install and configure Nginx
-apt-get install -y nginx
+apt install -y nginx
 touch /etc/nginx/sites-available/atom
 ln -sf /etc/nginx/sites-available/atom /etc/nginx/sites-enabled/atom
 rm /etc/nginx/sites-enabled/default
 cat <<"EOF" > /etc/nginx/sites-available/atom
 upstream atom {
-  server unix:/run/php7.0-fpm.atom.sock;
+  server unix:/run/php7.2-fpm.atom.sock;
 }
 
 server {
@@ -102,15 +104,11 @@ EOF
 systemctl enable nginx
 systemctl reload nginx
 # Install PHP
-apt-get install -y php7.0-cli php7.0-curl php7.0-json php7.0-ldap php7.0-mysql php7.0-opcache php7.0-readline php7.0-xml php7.0-fpm php7.0-mbstring php7.0-mcrypt php7.0-xsl php7.0-zip php-memcache php-apcu
-# Install php-apcu-bc
-apt-get install -y php-dev
-printf "\n" | pecl install apcu_bc-beta
-echo "extension=apc.so" | tee /etc/php/7.0/mods-available/apcu-bc.ini
-ln -sf /etc/php/7.0/mods-available/apcu-bc.ini /etc/php/7.0/fpm/conf.d/30-apcu-bc.ini
-ln -sf /etc/php/7.0/mods-available/apcu-bc.ini /etc/php/7.0/cli/conf.d/30-apcu-bc.ini
-systemctl restart php7.0-fpm
-cat <<"EOF" > /etc/php/7.0/fpm/pool.d/atom.conf
+apt install -y php7.2-cli php7.2-curl php7.2-json php7.2-ldap php7.2-mysql php7.2-opcache php7.2-readline php7.2-xml php7.2-fpm php7.2-mbstring php7.2-xsl php7.2-zip php-apcu
+# Install memcache here if need it
+
+# PHP pool
+cat <<"EOF" > /etc/php/7.2/fpm/pool.d/atom.conf
 [atom]
 
 ; The user running the application
@@ -118,7 +116,7 @@ user = www-data
 group = www-data
 
 ; Use UNIX sockets if Nginx and PHP-FPM are running in the same machine
-listen = /run/php7.0-fpm.atom.sock
+listen = /run/php7.2-fpm.atom.sock
 listen.owner = www-data
 listen.group = www-data
 listen.mode = 0600
@@ -169,13 +167,13 @@ php_admin_value[opcache.fast_shutdown] = 1
 env[ATOM_DEBUG_IP] = "10.10.10.10,127.0.0.1"
 env[ATOM_READ_ONLY] = "off"
 EOF
-systemctl enable php7.0-fpm
-systemctl start php7.0-fpm
+systemctl enable php7.2-fpm
+systemctl start php7.2-fpm
 # remove default PHP pool
-rm /etc/php/7.0/fpm/pool.d/www.conf
-systemctl restart php7.0-fpm
+rm /etc/php/7.2/fpm/pool.d/www.conf
+systemctl restart php7.2-fpm
 # install GEARMAN
-apt-get install -y gearman-job-server
+get install -y gearman-job-server
 cat <<"EOF" > /usr/lib/systemd/system/atom-worker.service
 [Unit]
 Description=AtoM worker
@@ -196,12 +194,12 @@ EOF
 systemctl daemon-reload
 systemctl enable atom-worker
 # FOP
-apt-get install -y --no-install-recommends fop libsaxon-java
+apt install -y --no-install-recommends fop libsaxon-java
 # Optional: apt-get install -y imagemagick ghostscript poppler-utils ffmpeg
 # Install AtoM
-wget https://storage.accesstomemory.org/releases/atom-2.4.0.tar.gz
+wget https://storage.accesstomemory.org/releases/atom-2.5.0.tar.gz
 mkdir /usr/share/nginx/atom
-tar xzf atom-2.4.0.tar.gz -C /usr/share/nginx/atom --strip 1
+tar xzf atom-2.5.0.tar.gz -C /usr/share/nginx/atom --strip 1
 chown -R www-data:www-data /usr/share/nginx/atom
 chmod o= /usr/share/nginx/atom
 # Setup DB
@@ -210,4 +208,9 @@ if [[ -z "${DB_HOST}" ]]; then
 else
   mysql -h localhost -u root -p$ROOT_DB_PASS -e "CREATE DATABASE atom CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
   mysql -h localhost -u root -p$ROOT_DB_PASS -e "GRANT ALL ON atom.* TO 'atom'@'localhost' IDENTIFIED BY '$ATOM_DB_PASS';"
+  cat <<"EOF" > /etc/mysql/conf.d/mysqld.cnf
+[mysqld]
+sql_mode=STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+EOF
+systemctl restart mysql
 fi

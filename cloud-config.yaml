@@ -1,0 +1,216 @@
+#cloud-config
+apt: 
+  sources:
+    openjdk:
+      source: "ppa:openjdk-r/ppa"
+    elastic-5.x.list:
+      source: "deb https://artifacts.elastic.co/packages/5.x/apt stable main"
+      key: | 
+        -----BEGIN PGP PUBLIC KEY BLOCK-----
+    		Version: GnuPG v2.0.14 (GNU/Linux)
+
+    		mQENBFI3HsoBCADXDtbNJnxbPqB1vDNtCsqhe49vFYsZN9IOZsZXgp7aHjh6CJBD
+    		A+bGFOwyhbd7at35jQjWAw1O3cfYsKAmFy+Ar3LHCMkV3oZspJACTIgCrwnkic/9
+    		CUliQe324qvObU2QRtP4Fl0zWcfb/S8UYzWXWIFuJqMvE9MaRY1bwUBvzoqavLGZ
+    		j3SF1SPO+TB5QrHkrQHBsmX+Jda6d4Ylt8/t6CvMwgQNlrlzIO9WT+YN6zS+sqHd
+    		1YK/aY5qhoLNhp9G/HxhcSVCkLq8SStj1ZZ1S9juBPoXV1ZWNbxFNGwOh/NYGldD
+    		2kmBf3YgCqeLzHahsAEpvAm8TBa7Q9W21C8vABEBAAG0RUVsYXN0aWNzZWFyY2gg
+    		KEVsYXN0aWNzZWFyY2ggU2lnbmluZyBLZXkpIDxkZXZfb3BzQGVsYXN0aWNzZWFy
+    		Y2gub3JnPokBOAQTAQIAIgUCUjceygIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgEC
+    		F4AACgkQ0n1mbNiOQrRzjAgAlTUQ1mgo3nK6BGXbj4XAJvuZDG0HILiUt+pPnz75
+    		nsf0NWhqR4yGFlmpuctgCmTD+HzYtV9fp9qW/bwVuJCNtKXk3sdzYABY+Yl0Cez/
+    		7C2GuGCOlbn0luCNT9BxJnh4mC9h/cKI3y5jvZ7wavwe41teqG14V+EoFSn3NPKm
+    		TxcDTFrV7SmVPxCBcQze00cJhprKxkuZMPPVqpBS+JfDQtzUQD/LSFfhHj9eD+Xe
+    		8d7sw+XvxB2aN4gnTlRzjL1nTRp0h2/IOGkqYfIG9rWmSLNlxhB2t+c0RsjdGM4/
+    		eRlPWylFbVMc5pmDpItrkWSnzBfkmXL3vO2X3WvwmSFiQbkBDQRSNx7KAQgA5JUl
+    		zcMW5/cuyZR8alSacKqhSbvoSqqbzHKcUQZmlzNMKGTABFG1yRx9r+wa/fvqP6OT
+    		RzRDvVS/cycws8YX7Ddum7x8uI95b9ye1/Xy5noPEm8cD+hplnpU+PBQZJ5XJ2I+
+    		1l9Nixx47wPGXeClLqcdn0ayd+v+Rwf3/XUJrvccG2YZUiQ4jWZkoxsA07xx7Bj+
+    		Lt8/FKG7sHRFvePFU0ZS6JFx9GJqjSBbHRRkam+4emW3uWgVfZxuwcUCn1ayNgRt
+    		KiFv9jQrg2TIWEvzYx9tywTCxc+FFMWAlbCzi+m4WD+QUWWfDQ009U/WM0ks0Kww
+    		EwSk/UDuToxGnKU2dQARAQABiQEfBBgBAgAJBQJSNx7KAhsMAAoJENJ9ZmzYjkK0
+    		c3MIAIE9hAR20mqJWLcsxLtrRs6uNF1VrpB+4n/55QU7oxA1iVBO6IFu4qgsF12J
+    		TavnJ5MLaETlggXY+zDef9syTPXoQctpzcaNVDmedwo1SiL03uMoblOvWpMR/Y0j
+    		6rm7IgrMWUDXDPvoPGjMl2q1iTeyHkMZEyUJ8SKsaHh4jV9wp9KmC8C+9CwMukL7
+    		vM5w8cgvJoAwsp3Fn59AxWthN3XJYcnMfStkIuWgR7U2r+a210W6vnUxU4oN0PmM
+    		cursYPyeV0NX/KQeUeNMwGTFB6QHS/anRaGQewijkrYYoTNtfllxIu9XYmiBERQ/
+    		qPDlGRlOgVTd9xUfHFkzB52c70E=
+    		=92oX
+    		-----END PGP PUBLIC KEY BLOCK-----
+packages:
+  - [openjdk-11-jre-headless, software-properties-common]
+  - elasticsearch
+  - nginx
+  - [php7.2-cli, php7.2-curl, php7.2-json, php7.2-ldap, php7.2-mysql, php7.2-opcache, php7.2-readline, php7.2-xml, php7.2-fpm, php7.2-mbstring, php7.2-xsl, php7.2-zip, php-apcu]
+  - gearman-job-server
+write_files:
+  - content: | 
+      upstream atom {
+        server unix:/run/php7.2-fpm.atom.sock;
+      }
+
+      server {
+
+        listen 80;
+        root /usr/share/nginx/atom;
+
+        # http://wiki.nginx.org/HttpCoreModule#server_name
+        # _ means catch any, but it's better if you replace this with your server
+        # name, e.g. archives.foobar.com
+        server_name _;
+
+        client_max_body_size 72M;
+
+        # http://wiki.nginx.org/HttpCoreModule#try_files
+        location / {
+          try_files $uri /index.php?$args;
+        }
+
+        location ~ /\. {
+          deny all;
+          return 404;
+        }
+
+        location ~* (\.yml|\.ini|\.tmpl)$ {
+          deny all;
+          return 404;
+        }
+
+        location ~* /(?:uploads|files)/.*\.php$ {
+          deny all;
+          return 404;
+        }
+
+        location ~* /uploads/r/(.*)/conf/ {
+
+        }
+
+        location ~* ^/uploads/r/(.*)$ {
+          include /etc/nginx/fastcgi_params;
+          set $index /index.php;
+          fastcgi_param SCRIPT_FILENAME $document_root$index;
+          fastcgi_param SCRIPT_NAME $index;
+          fastcgi_pass atom;
+        }
+
+        location ~ ^/private/(.*)$ {
+          internal;
+          alias /usr/share/nginx/atom/$1;
+        }
+
+        location ~ ^/(index|qubit_dev)\.php(/|$) {
+          include /etc/nginx/fastcgi_params;
+          fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+          fastcgi_split_path_info ^(.+\.php)(/.*)$;
+          fastcgi_pass atom;
+        }
+
+        location ~* \.php$ {
+          deny all;
+          return 404;
+        }
+
+      }
+    owner: root:root
+    permissions: '0644'
+    path: /etc/nginx/sites-available/atom
+  - content: | 
+      [atom]
+
+      ; The user running the application
+      user = www-data
+      group = www-data
+
+      ; Use UNIX sockets if Nginx and PHP-FPM are running in the same machine
+      listen = /run/php7.2-fpm.atom.sock
+      listen.owner = www-data
+      listen.group = www-data
+      listen.mode = 0600
+
+      ; The following directives should be tweaked based in your hardware resources
+      pm = dynamic
+      pm.max_children = 30
+      pm.start_servers = 10
+      pm.min_spare_servers = 10
+      pm.max_spare_servers = 10
+      pm.max_requests = 200
+
+      chdir = /
+
+      ; Some defaults for your PHP production environment
+      ; A full list here: http://www.php.net/manual/en/ini.list.php
+      php_admin_value[expose_php] = off
+      php_admin_value[allow_url_fopen] = on
+      php_admin_value[memory_limit] = 512M
+      php_admin_value[max_execution_time] = 120
+      php_admin_value[post_max_size] = 72M
+      php_admin_value[upload_max_filesize] = 64M
+      php_admin_value[max_file_uploads] = 10
+      php_admin_value[cgi.fix_pathinfo] = 0
+      php_admin_value[display_errors] = off
+      php_admin_value[display_startup_errors] = off
+      php_admin_value[html_errors] = off
+      php_admin_value[session.use_only_cookies] = 0
+
+      ; APC
+      php_admin_value[apc.enabled] = 1
+      php_admin_value[apc.shm_size] = 64M
+      php_admin_value[apc.num_files_hint] = 5000
+      php_admin_value[apc.stat] = 0
+
+      ; Zend OPcache
+      php_admin_value[opcache.enable] = 1
+      php_admin_value[opcache.memory_consumption] = 192
+      php_admin_value[opcache.interned_strings_buffer] = 16
+      php_admin_value[opcache.max_accelerated_files] = 4000
+      php_admin_value[opcache.validate_timestamps] = 0
+      php_admin_value[opcache.fast_shutdown] = 1
+
+      ; This is a good place to define some environment variables, e.g. use
+      ; ATOM_DEBUG_IP to define a list of IP addresses with full access to the
+      ; debug frontend or ATOM_READ_ONLY if you want AtoM to prevent
+      ; authenticated users
+      env[ATOM_DEBUG_IP] = "10.10.10.10,127.0.0.1"
+      env[ATOM_READ_ONLY] = "off"
+    owner: root:root
+    permissions: '0644'
+    path: /etc/php/7.2/fpm/pool.d/atom.conf
+    - content: | 
+        [Unit]
+        Description=AtoM worker
+        After=network.target
+        # High interval and low restart limit to increase the possibility
+        # of hitting the rate limits in long running recurrent jobs.
+        StartLimitIntervalSec=24h
+        StartLimitBurst=3
+
+        [Install]
+        WantedBy=multi-user.target
+
+        [Service]
+        Type=simple
+        User=www-data
+        Group=www-data
+        WorkingDirectory=/usr/share/nginx/atom
+        ExecStart=/usr/bin/php7.2 -d memory_limit=-1 -d error_reporting="E_ALL" symfony jobs:worker
+        KillSignal=SIGTERM
+        Restart=on-failure
+        RestartSec=30
+    owner: root:root
+    permissions: '0644'
+    path: /usr/lib/systemd/system/atom-worker.service
+runcmd:
+  - [systemctl, enable, elasticsearch, --now]
+  - [ln, -sf, /etc/nginx/sites-available/atom, /etc/nginx/sites-enabled/atom]
+  - [rm, /etc/nginx/sites-enabled/default]
+  - [systemctl, enable, nginx]
+  - [systemctl, reload, nginx]
+  - [rm, /etc/php/7.2/fpm/pool.d/www.conf]
+  - [systemctl, enable, php7.2-fpm, --now]
+  - [systemctl, enable, atom-worker, --now]
+  - [apt, install, -y, --no-install-recommends, fop, libsaxon-java]
+  - [wget, "https://storage.accesstomemory.org/releases/atom-2.5.1.tar.gz"]
+  - [mkdir, /usr/share/nginx/atom]
+  - [tar, xzf, atom-2.5.0.tar.gz, -C, /usr/share/nginx/atom, --strip, 1]
+  - [chown, -R, www-data:www-data, /usr/share/nginx/atom]
+  - [chmod, o=, /usr/share/nginx/atom]

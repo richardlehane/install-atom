@@ -173,7 +173,7 @@ systemctl start php7.2-fpm
 rm /etc/php/7.2/fpm/pool.d/www.conf
 systemctl restart php7.2-fpm
 # install GEARMAN
-get install -y gearman-job-server
+apt install -y gearman-job-server
 cat <<"EOF" > /usr/lib/systemd/system/atom-worker.service
 [Unit]
 Description=AtoM worker
